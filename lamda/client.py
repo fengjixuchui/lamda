@@ -6,6 +6,7 @@ import os
 import io
 import re
 import sys
+import copy
 import time
 import uuid
 import json
@@ -17,6 +18,7 @@ import logging
 import atexit
 import grpc
 
+from urllib.parse import quote
 from collections import defaultdict
 from os.path import basename, dirname, expanduser, join as joinpath
 from grpc_interceptor import ClientInterceptor
@@ -37,7 +39,6 @@ from . import exceptions
 
 logger = logging.getLogger("lamda")
 FORMAT = "%(asctime)s %(process)d %(levelname)7s@%(module)s:%(funcName)s - %(message)s"
-logging.basicConfig(format=FORMAT)
 
 sys.path.append(joinpath(dirname(__file__)))
 sys.path.append(joinpath(dirname(__file__), "rpc"))
@@ -251,7 +252,7 @@ class ClientSessionMetadataInterceptor(ClientInterceptor):
         metadata = {}
         metadata["version"] = __version__
         metadata["instance"] = self.get_instance_ID()
-        metadata["hostname"] = platform.node()
+        metadata["hostname"] = quote(platform.node())
         metadata["python_branch"] = platform.python_branch()
         details = details._replace(metadata=metadata.items())
         res = function(request, details)
@@ -295,6 +296,23 @@ class ObjectUiAutomatorOpStub:
                         for k, v in self._selector.items()])
         return "Object: {}".format(selector)
     __repr__ = __str__
+    def _child_sibling(self, name, **selector):
+        s = copy.deepcopy(self._selector)
+        s.setdefault("childOrSibling", [])
+        s.setdefault("childOrSiblingSelector", [])
+        s["childOrSiblingSelector"].append(selector)
+        s["childOrSibling"].append(name)
+        return self.__class__(self.stub, s)
+    def child(self, **selector):
+        """
+        匹配选择器里面的子节点
+        """
+        return self._child_sibling("child", **selector)
+    def sibling(self, **selector):
+        """
+        匹配选择器的同级节点
+        """
+        return self._child_sibling("sibling", **selector)
     def take_screenshot(self, quality=100):
         """
         对选择器选中元素进行截图
@@ -1759,8 +1777,11 @@ class Device(object):
         return self.stub("UiAutomator").device_info()
     def __call__(self, **kwargs):
         return self.stub("UiAutomator")(**kwargs)
+    def setup_log_format(self):
+        logging.basicConfig(format=FORMAT)
     def set_debug_log_enabled(self, enable):
-        logger.setLevel(logging.DEBUG if enable else logging.WARNING)
+        level = logging.DEBUG if enable else logging.WARN
+        logger.setLevel(level)
         return enable
     # 接口锁定
     def _acquire_lock(self, leaseTime=60):

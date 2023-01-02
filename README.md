@@ -10,8 +10,9 @@
 </div>
 
 
-这是一个用于安卓逆向及自动化的辅助框架，它以编程化的接口大幅减少你的手动操作，你将不再需要关心琐碎的问题。通过它，你可以获得：
+lamda 是一个用于逆向及自动化的辅助框架，它设计为减少安全分析以及应用测试人员的时间及琐碎问题，以编程化的接口替代大量手动操作。通过它，你可以：
 
+* 永远无需把手机放在桌边
 * 零依赖，只需 root 即可
 * 支持安卓 6.0 (M, API 23) - 13 (T, API 33)
 * 极其简单的调用，封装了大量常用接口，你只需要会写 Python
@@ -41,6 +42,7 @@
 * 内置 crontab 定时任务
 * 内置 Python3.9 及部分常用模块
 * WIFI 远程桌面（web）
+* 界面布局检视
 
 同时，tools/ 目录下还包含了一些常用的脚本以及开箱即用的服务。
 
@@ -52,6 +54,13 @@
 
 ![中间人流量分析动图演示](image/mitm.gif)
 
+## 界面布局检视
+
+可在远程桌面即时检视安卓应用的界面布局用以编写自动化代码，在远程桌面按下 `CTRL + I` 即可进入模式，
+按下 `CTRL + R` 刷新布局，再次按下 `CTRL + I` 退出。
+
+![界面布局检视](image/inspect.gif)
+
 ## 通过代码自动化
 
 直接通过代码点点点，可以替代大部分手动操作。
@@ -60,7 +69,7 @@
 
 ## 远程桌面连接
 
-即使手机不在身边也可以随时操作界面。
+即使手机不在身边也可以使用浏览器随时操作界面，并且内置了 Python 以及相关 frida 工具，它是你的另一个在线 shell。
 
 ![远程桌面动图演示](image/lamda.gif)
 
@@ -84,7 +93,7 @@
 ![数据库在线浏览](image/dbview.gif)
 
 
-如果你希望继续看下去，请先确保：手边有一台已经 root 且运行内存 **>= 3GB**，可用存储空间 **>= 1GB** 的安卓设备或者安卓模拟器（推荐使用最新版**夜神**，**雷电**，**逍遥**模拟器，或者 AVD [Android Studio Virtual Device]）。**不完全支持** 网易 Mumu，**不支持**腾讯手游助手、蓝叠以及任何安卓内虚拟如 VMOS、部分 Docker 类型的云手机、等），对于真机，推荐运行最接近原生系统的设备如谷歌系、一加、安卓开发板等，或系统仅经过轻度改造的设备。目前**可能不能**在蓝绿厂(OPPO/VIVO)/华为/小米类高度改造的安卓系统上正常运行，如果你只有此类品牌设备，经过尝试后无法正常运行，建议改用模拟器。
+如果你希望继续看下去，请先确保：手边有一台已经 root 且运行内存大于 2GB，可用存储空间大于 1GB 的安卓设备或者安卓模拟器（推荐使用最新版**夜神**，**雷电**模拟器，或者 AVD [Android Studio Virtual Device]）。**不完全支持** 网易 Mumu，**不支持**腾讯手游助手、蓝叠以及任何安卓内虚拟如 VMOS、部分 Docker 类型的云手机、等），对于真机，推荐运行最接近原生系统的设备如谷歌系、一加、安卓开发板等，或系统仅经过轻度改造的设备。如果你使用的是OPPO/VIVO/华为/小米的设备，经过尝试后无法正常运行，建议改用模拟器。
 
 对于**云手机**，目前已知一些提供商的情况为：X马云手机基本都可以正常使用，X多云手机安卓9.0版本可以正常使用，
 不支持X手指、X电、X云兔、X子星（这些云手机很多都是Docker/套中套类型或者限制较多），其余未经测试。
@@ -97,7 +106,7 @@
 
 为了下载使用由 rev1si0n (账号 github.com/rev1si0n)（以下简称“本人”）个人开发的软件 lamda ，您应当阅读并遵守《用户使用协议》（以下简称“本协议”）。请您务必审慎阅读、充分理解各条款内容，特别是免除或者限制责任的条款，并选择接受或不接受；除非您已阅读并接受本协议所有条款，否则您将无权下载、安装或使用本软件及相关服务。您的下载、安装、使用、获取账号、登录等行为即视为您已阅读并同意受到上述协议的约束；若您需要获得本服务，您（以下称"用户"）应当同意本协议的全部条款并按照页面上的提示完成全部申请使用程序。您可以在本文档的相同目录找到 [DISCLAIMER.TXT](DISCLAIMER.TXT)，或者点此 [免责声明](DISCLAIMER.TXT) 查阅。
 
-lamda 本身不会侵入其他应用，仅提供自身及第三方程序的能力给用户自行选择，所有操作均为用户的主观行为。
+lamda 不提供任何侵入、修改、抓取其他应用内存及网络数据的功能，主要收集了各种第三方程序给用户自行选择，方便安全分析人员使用，相关工具均为合法合规的APP分析、Mock 场景提供，你**不得**将其用于**任何**违法违规或未授权的行为。
 
 ## 前言
 
@@ -153,7 +162,7 @@ export crashed=1
 > 其他情况
 
 首次启动时，有一定几率会出现 web 远程桌面一直加载中超过五分钟或者接口一直处于 ServiceUnavailable 状态
-出现这种情况时，请重启设备并重新启动 lamda。
+出现这种情况时，请尝试重启设备并重新启动 lamda。
 
 ### 我不想听一句废话，只想快速看看怎么样
 
@@ -206,6 +215,7 @@ pip3 install -U 'lamda[frida]'
 * `TypeError: Couldn't build proto file..`
 
 通常是因为依赖问题导致，有可能因为安装的 mitmproxy 或者其他依赖 gRPC 的包产生冲突。请尝试使用如下方法重新安装
+
 ```bash
 # 1. 尝试重新安装 lamda
 pip3 install -U --force-reinstall lamda
@@ -247,43 +257,22 @@ abi not match       (使用了错误的 gz 包，例如在 x86_64 上运行了 x
 > 用它安装是最简便以及通用的，但仍无法保证各版本安卓的差异性导致可能的安装失败。所以，下面将会介绍两种安装方法，推荐第一种，第二种则是
 > 第一种完整的手动过程，你可以在第一种失败的情况下使用。
 
-下载完成后，将设备连接到当前电脑并确保已连接 ADB，现在开始完成**前置条件**：
-
-> 为了兼容各种设备的分区特性，在**每次设备启动后**，建议执行：
+如果使用的是 AVD (Android Studio Virtual Device)，可能还需要扩展默认存储空间的大小。
 
 ```bash
-adb root
-adb remount
-```
-真机应该会失败，无需关心是否报错。
-
-> 如果使用的是 AVD (Android Studio Virtual Device)，则按照以下方法启动。
-
-请使用如下命令启动虚拟设备（你可能会遇到找不到 emulator 命令的情况，
-请参阅此文档获知此命令的位置 [developer.android.com/studio/run/emulator-commandline](https://developer.android.com/studio/run/emulator-commandline?hl=zh-cn) 并将其加入 PATH 变量中，对于 Windows，它是 `emulator.exe`）
-
-```bash
-# Pixel_4_API_29 为虚拟机ID，可以使用 emulator -list-avds 列出
-# -partition-size 部分新建的 AVD 可用存储空间可能只有百兆，这里修改为 4G
-emulator -avd Pixel_4_API_29 -partition-size 4096 -writable-system -no-snapshot-load
+# Pixel_5_API_29 为虚拟机ID，可以使用命令 emulator -list-avds 列出
+# -partition-size 部分新建的 AVD 可用存储空间可能只有百兆，这里修改为 2G
+emulator -avd Pixel_5_API_29 -partition-size 2048 -no-snapshot-load
+# 随后每次启动虚拟机时都使用该命令
+#
+# 可能会遇到找不到 emulator 命令的情况，
+# 请参阅此文档获知此命令的位置 https://developer.android.com/studio/run/emulator-commandline?hl=zh-cn 并将其加入 PATH 变量中
+#
+# 如果你无法完成上面的命令，请手动点击 Android Studio 中的 Virtual Device Manager，新建一个虚拟机，随后找到对应虚拟机并点击后方的编辑按钮（一个笔的符号），
+# 点击 Show Advanced Settings，找到 Storage -> Internal Storage 并将其设置为至少 2GB。
 ```
 
-并在启动后执行
-
-```bash
-# 这些命令有可能报错，无视即可
-adb shell avbctl disable-verification
-adb disable-verity
-```
-
-随后重启设备（`adb reboot`，需要等待一会），启动后继续执行
-
-```bash
-adb root
-adb remount
-```
-
-> 开始安装
+你已经准备好了安装包 tar.gz 或者 install.sh，以及一台 root 了的设备，将设备连接到当前电脑并确保已授权 ADB，现在开始安装过程
 
 #### 方式 1
 
@@ -299,6 +288,8 @@ su
 cd  /data/local/tmp
 # 执行安装脚本并启动（这将解包并启动服务）
 sh arm64-v8a.tar.gz-install.sh
+# 删除安装包
+rm arm64-v8a.tar.gz-install.sh
 ```
 
 #### 方式 2
@@ -318,14 +309,14 @@ cd /data/local/tmp
 # 注意自带的 tar 命令可能因为不支持 z 选项导致解包失败，你可能需要使用 busybox tar 来解包
 # 如果系统不附带 busybox 命令，请自行从 https://busybox.net/downloads/binaries/1.20.0 下载合适架构的版本
 tar -xzf arm64-v8a.tar.gz
+# 删除安装包
+rm arm64-v8a.tar.gz
 ```
 
 > 启动服务
 
-注: 方式 1 安装后，会顺带启动服务，所以使用该方法**首次安装后**你无需执行下面的命令。
-
-注: **并不是每次启动都需要 push 并安装**，上面方式1,2描述的过程只需首次执行即可，但是
-下面的过程则需要每次设备重启后执行。
+对于方式 1 安装，安装后会顺带启动服务，所以使用该方法**安装后**你无需执行下面的命令，但是按照下面的操作再来一次也并没有问题。
+对于上面任意一种安装方法，你永远只需要在首次安装时操作，但是**启动服务**的过程则需要在每次 设备重启 或者 你手动关闭 lamda 后执行，因为 lamda 不会自己运行。
 
 进入 adb shell，并切换为 `su` root 身份，执行：
 
@@ -676,7 +667,7 @@ frida -H 192.168.0.2:65000 -f com.android.settings --certificate /path/to/lamda.
 注意这与你在 linux 使用 crontab 并不相同，在 linux 正常使用 `crontab -e` 命令
 来编辑任务，但是框架并未提供此命令，你需要直接编辑文件来写入规则（道理是相同的，都是编辑文件而已）
 
-现在，请打开 web 控制台或者连接设备的 ssh，执行命令 `cd` 来切换到家目录。
+现在，请打开 web 控制台或者连接设备的 ssh/adb shell，执行命令 `cd` 来切换到家目录。
 此时家目录中有个名为 crontab 的文件夹。执行命令 `busybox vi crontab/jobs`，你将进入编辑文件，在英文输入模式下按下字母 `i`，随后写下相关规则，并按下 `ESC`，`SHIFT` + `:`，输入 `wq` 并按下回车来保存。你可以在这个 jobs 文件中写入多行，同样，你也可以在这个文件夹下创建其他名字的规则文件。
 
 如果你还是不懂怎么编辑，请在电脑编辑完成后使用adb转移到此目录。
@@ -759,7 +750,7 @@ fwd.protocol=tcp
 fwd.enable=true
 ```
 
-进入设备的 ssh 命令行（也可通过 web 远程桌面拖拉上传文件），执行
+进入设备的 ssh 或者内置 adb 命令行（也可通过 web 远程桌面拖拉上传文件），执行
 
 ```bash
 cd # 先切换到家目录
@@ -1211,7 +1202,7 @@ d.press_keycode(KeyCodes.KEYCODE_CALL)
 
 ```python
 quality = 60 # 截图质量，默认为全画质
-d.take_screenshot(quality).save("screenshot.png")
+d.screenshot(quality).save("screenshot.png")
 # 截取屏幕上特定区域的图像
 # Bound 的参数 top,left 等定义：
 
@@ -1222,7 +1213,7 @@ d.take_screenshot(quality).save("screenshot.png")
 
 # 正常情况下 top 永远小于 bottom，left 永远小于 right
 bound = Bound(top=50, bottom=80, left=50, right=80)
-d.take_screenshot(quality, bound=bound).save("partial.png")
+d.screenshot(quality, bound=bound).save("partial.png")
 ```
 
 > 点击屏幕上的一个点
@@ -1284,20 +1275,9 @@ d.wait_for_idle(5*1000)
 
 > Selector
 
-界面选择器，类似于网页，安卓的界面也可以通过选择器进行元素的选择。
-在开始了解前，请先安装第三方的 [alibaba/web-editor](https://github.com/alibaba/web-editor)，你可以通过
-```bash
-pip3 install weditor
-```
-直接安装。
-
-随后，在命令行输入 `weditor` 启动，你会自动跳转到相关页面，在顶部连接设备区域输入 `设备IP:65000` 并点击 CONNECT 进行连接。
-注意，暂仅支持其UI审查功能，请不要使用右侧代码运行/实时等功能。
-
-连接到设备后，点击 `Dump Hierarchy` 来获取当前界面布局，你可以将其想象成打开了开发者工具并得到DOM布局。
-
-这样，你可以在左侧页面屏幕上选择你感兴趣的元素，在页面中部 `Selected Element` 区域将会显示其属性。
-你可以将其中的大部分属性作为 Selector 的参数。
+界面布局检视，首先你需要打开设备的 web 远程桌面。随后，鼠标点击左侧屏幕确保焦点落在投屏上（否则焦点可能会被右侧的终端捕获），
+然后按下快捷键 `CTRL+I`(启动布局检视)，此时你将不能再滑动左侧屏幕，你可以点击屏幕上的虚线框来查看对应元素的信息，你可以将其中的部分属性作为 Selector 的参数。
+再次按下 `CTRL+I` 将关闭布局检视，布局检视并不会随着页面的改变而刷新，它始终是你按下快捷键那一刻的屏幕布局，如果需要刷新布局请手动按下快捷键 `CTRL+R`。
 
 正常情况下，我们只会使用 `resourceId`, `clickable`, `text`, `description` 作为参数。
 如果元素存在正常的 resourceId，优先使用其作为 Selector，即：`Selector(resourceId="com.android.systemui:id/mobile_signal_single")`。
@@ -1305,6 +1285,8 @@ pip3 install weditor
 description 与 text 同理，但是 description 用的会比较少。
 
 当然，Selector 不止可以使用一个参数，你可以做其他组合，例如 `Selector(text="点击进入", clickable=True)`
+
+> 注意：很少直接用 Selector()，大部分情况下，使用 d() 来进行。
 
 所有常见的匹配参数：
 
@@ -1378,10 +1360,26 @@ element.wait_until_gone(10*1000)
 
 # 获取该元素的截图（不是全屏，只是该元素）
 # quality 为截图质量 1-100
-element.take_screenshot(quality=60)
+element.screenshot(quality=60)
 
 # 将此 APP 拖动归类到 购物 文件夹（依据实际情况修改）
 element.drag_to(Selector(text="购物"))
+
+#########
+# 查找同级或者子级元素
+#########
+# 有时候会有一些重复元素或者无明显特征的元素，很难去定位
+# 这时你可以通过查找子级/同级元素的方法来缩小查找范围
+# 子级元素，举例为：一个聊天登录框，里面的输入框即为登录框的子级元素
+# 同级元素，举例为：聊天输入框里面的用户名和密码框为同级原始（正常情况下）
+form = d(resourceId="login_form")
+form.child(index=1)
+# 这将获取到 login_form 下 index 为 0 的元素
+form.child(index=1).sibling()
+# 你也这样来找与 login_form 同级的找回密码按钮
+#（其实已经可以通过字符串判断了，就不需要这样做了，这里只是演示）
+form.sibling(textContains="找回密码")
+# 它们本身就是一个element，你可以对其做任何 element 的操作
 
 
 ############################
@@ -1574,7 +1572,7 @@ d._release_lock()
 
 ## 如何使用内部终端
 
-这里的内部终端，指的是你通过 web 远程桌面或者 ssh 连接的终端，里面内置了一些命令以及Python模块，你可以
+这里的内部终端，指的是你通过 web 远程桌面或者 ssh/内置adb 连接的终端，里面内置了一些命令以及Python模块，你可以
 直接在里面执行一些操作或者运行一些 Python 代码。
 
 现在假设你已经打开了 web 远程桌面，你应该已经在页面上看到了一个 linux 终端。
