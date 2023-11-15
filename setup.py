@@ -6,27 +6,29 @@ exec(open("lamda/__init__.py", "rt").read())
 
 setuptools.setup(
     name            = "lamda",
-    version         = "{}.{}".format(__version__, __build__),
+    version         = "{}".format(__version__),
     description     = "Android reverse engineering & automation framework",
     url             = "https://github.com/rev1si0n/lamda",
     author          = "rev1si0n",
     python_requires = ">=3.6,<3.11",
     zip_safe        = False,
     extras_require  = {
-        "frida": ["frida>=15.0.0,<16.0.0,!=15.1.15,!=15.1.16,!=15.1.17"],
+        "next": ["frida>=16.0.0,<17.0.0"],
+        "full": ["frida>=15.0.0,<16.0.0,!=15.1.15,!=15.1.16,!=15.1.17"],
         ":sys_platform == \"win32\"": [
             "pyreadline==2.1",
         ],
     },
     install_requires= [
-        "grpcio-tools>=1.35.0,<1.48.0",
-        "grpc-interceptor>=0.13.0,<0.14.2",
-        "grpcio>=1.35.0,<1.48.0",
+        "grpcio-tools>=1.35.0,<1.49.0",
+        "grpc-interceptor>=0.13.0,<0.15.0",
+        "grpcio>=1.35.0,<1.49.0",
         "asn1crypto>=1.0.0,<2",
     ],
     classifiers = [
         "Environment :: Console",
         "Intended Audience :: Developers",
+        "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Information Technology",
         "Intended Audience :: Science/Research",
         "Programming Language :: Python :: 3",

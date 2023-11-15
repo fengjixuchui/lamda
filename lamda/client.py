@@ -13,16 +13,18 @@ import json
 import platform
 import warnings
 import builtins
-import pathlib
 import logging
-import atexit
 import grpc
+
+import collections.abc
+# fix pyreadline on windows py310
+collections.Callable = collections.abc.Callable
 
 from urllib.parse import quote
 from collections import defaultdict
 from os.path import basename, dirname, expanduser, join as joinpath
+from google.protobuf.json_format import MessageToDict, MessageToJson
 from grpc_interceptor import ClientInterceptor
-from google.protobuf.json_format import MessageToDict
 from google.protobuf.message import Message
 from asn1crypto import pem, x509
 
@@ -72,6 +74,7 @@ __all__ = [
                 "Point",
                 "Bound",
                 "load_proto",
+                "to_dict",
                 "Device",
                 "logger",
 ]
@@ -218,6 +221,12 @@ Bound.corner = corner
 def load_proto(name):
     """ 载入包下面的相关 proto 文件 """
     return grpc.protos_and_services(name)
+
+
+def to_dict(prot):
+    """ 将 proto 返回值转换为字典 """
+    r = MessageToJson(prot, preserving_proto_field_name=True)
+    return json.loads(r)
 
 
 class BaseServiceStub(object):
@@ -685,6 +694,12 @@ class UiAutomatorStub(BaseServiceStub):
         获取此 watcher 是否启用
         """
         return self.watchers.get(name, {}).get("enable")
+    def get_last_toast(self):
+        """
+        获取系统中最后一个 toast 消息
+        """
+        r = self.stub.getLastToast(protos.Empty())
+        return r
     def remove_watcher(self, name):
         """
         移除一个 watcher
@@ -788,12 +803,12 @@ class UiAutomatorStub(BaseServiceStub):
         req = protos.PressKeyRequest(key=key)
         r = self.stub.pressKey(req)
         return r.value
-    def press_keycode(self, code):
+    def press_keycode(self, code, meta=0):
         """
         通过 Keycode(整数)按下未定义的按键
         ref: https://developer.android.com/reference/android/view/KeyEvent
         """
-        req = protos.PressKeyRequest(code=code)
+        req = protos.PressKeyRequest(code=code, meta=meta)
         r = self.stub.pressKeyCode(req)
         return r.value
     def take_screenshot(self, quality, bound=None):
@@ -869,7 +884,7 @@ class ObjectApplicationOpStub:
         """
         req = protos.ApplicationRequest(name=self.applicationId)
         r = self.stub.queryLaunchActivity(req)
-        return r
+        return to_dict(r)
     def is_permission_granted(self, permission):
         """
         检查是否已经授予应用某权限（应用需要运行时获取的权限）
@@ -985,9 +1000,16 @@ class ApplicationStub(BaseServiceStub):
         """
         r = self.stub.enumerateAllPkgNames(protos.Empty())
         return r.names
+    def get_last_activities(self, count=3):
+        """
+        获取系统中最后一个活动的详细信息
+        """
+        req = protos.Integer(value=count)
+        r = self.stub.getLastActivities(req).activities
+        return list(map(to_dict, r))
     def start_activity(self, **activity):
         """
-        启动 activity（任意, always return true）
+        启动 activity（总是返回 True）
         """
         activity.setdefault("extras", {})
         extras = activity.pop("extras")
@@ -1127,7 +1149,7 @@ class DebugStub(BaseServiceStub):
         return r.value
     def start_android_debug_bridge(self):
         """
-        启动 adbd (默认随框架启动)
+        启动内置 adbd (默认随框架启动)
         """
         r = self.stub.startAndroidDebugBridge(protos.Empty())
         return r.value
@@ -1149,7 +1171,7 @@ class DebugStub(BaseServiceStub):
         return r.value
     def stop_android_debug_bridge(self):
         """
-        停止 adb daemon (有可能无效)
+        停止内置 adb daemon
         """
         r = self.stub.stopAndroidDebugBridge(protos.Empty())
         return r.value
@@ -1417,12 +1439,18 @@ class FileStub(BaseServiceStub):
         for chunk in iterator:
             fd.write(chunk.payload)
     def download_fd(self, fpath, fd):
+        """
+        从设备下载文件到文件描述符
+        """
         req = protos.FileRequest(path=fpath)
         iterator = self.stub.downloadFile(req)
         self._fd_streaming_recv(fd, iterator)
         st = self.file_stat(fpath)
         return st
     def upload_fd(self, fd, dest):
+        """
+        上传文件描述符至设备
+        """
         chunksize = 1024*1024*1
         streaming = self._fd_streaming_send(fd, dest,
                                               chunksize)
@@ -1430,9 +1458,15 @@ class FileStub(BaseServiceStub):
         st = self.file_stat(dest)
         return st
     def download_file(self, fpath, dest):
+        """
+        从设备下载文件到本地
+        """
         with io.open(dest, mode="wb") as fd:
             return self.download_fd(fpath, fd)
     def upload_file(self, fpath, dest):
+        """
+        上传本地文件至设备
+        """
         with io.open(fpath, mode="rb") as fd:
             return self.upload_fd(fd, dest)
     def delete_file(self, fpath):
@@ -1638,6 +1672,8 @@ class Device(object):
         return self.stub("Application").enumerate_all_pkg_names()
     def enumerate_running_processes(self):
         return self.stub("Application").enumerate_running_processes()
+    def get_last_activities(self, count=3):
+        return self.stub("Application").get_last_activities(count=count)
     def start_activity(self, **activity):
         return self.stub("Application").start_activity(**activity)
     def application(self, applicationId):
@@ -1731,8 +1767,8 @@ class Device(object):
         return self.stub("UiAutomator").set_orientation(orien)
     def press_key(self, key):
         return self.stub("UiAutomator").press_key(key)
-    def press_keycode(self, code):
-        return self.stub("UiAutomator").press_keycode(code)
+    def press_keycode(self, code, meta=0):
+        return self.stub("UiAutomator").press_keycode(code, meta)
     def take_screenshot(self, quality=100, bound=None):
         return self.stub("UiAutomator").take_screenshot(quality, bound=bound)
     def screenshot(self, quality=100, bound=None):
@@ -1741,6 +1777,8 @@ class Device(object):
         return self.stub("UiAutomator").dump_window_hierarchy()
     def wait_for_idle(self, timeout):
         return self.stub("UiAutomator").wait_for_idle(timeout)
+    def get_last_toast(self):
+        return self.stub("UiAutomator").get_last_toast()
     # watcher
     def remove_all_watchers(self):
         return self.stub("UiAutomator").remove_all_watchers()
@@ -1804,19 +1842,16 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-device", type=str, required=True,
+    crt = os.environ.get("CERTIFICATE", None)
+    port = int(os.environ.get("PORT", 65000))
+    parser.add_argument("-device", type=str, default="localhost",
                                    help="service ip address")
-    parser.add_argument("-port", type=int, default=65000,
+    parser.add_argument("-port", type=int, default=port,
                                    help="service port")
-    parser.add_argument("-cert", type=str, default=None,
+    parser.add_argument("-cert", type=str, default=crt,
                                    help="ssl cert")
     args = parser.parse_args()
 
-    HIST = expanduser("~/.lamda-cli_history")
-    pathlib.Path(HIST).touch(exist_ok=True)
-
-    readline.read_history_file(HIST)
-    atexit.register(readline.write_history_file, HIST)
     readline.parse_and_bind("tab: complete")
 
     d = Device(args.device, port=args.port,
